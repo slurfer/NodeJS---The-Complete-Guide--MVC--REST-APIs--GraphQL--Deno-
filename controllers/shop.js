@@ -51,23 +51,21 @@ exports.getIndex = (req, res, next) => {
 };
 
 exports.getCart = (req, res, next) => {
-  Cart.getCart((cart) => {
-    console.log("ahoj");
-    Product.fetchAll((products) => {
-      const cartProducts = [];
-      for (product of products) {
-        cartProductData = cart.products.find((prod) => prod.id === product.id);
-        if (cartProductData) {
-          cartProducts.push({ productData: product, qty: cartProductData.qty });
-        }
-      }
-      res.render("shop/cart", {
-        products: cartProducts,
-        pageTitle: "All Products",
-        path: "/cart",
-      });
-    });
-  });
+  req.user
+    .getCart()
+    .then((cart) => {
+      return cart
+        .getProducts()
+        .then((cartProducts) => {
+          res.render("shop/cart", {
+            products: cartProducts,
+            pageTitle: "All Products",
+            path: "/cart",
+          });
+        })
+        .catch((err) => console.log(err));
+    })
+    .catch((err) => console.log(err));
 };
 
 exports.postCart = (req, res, next) => {
