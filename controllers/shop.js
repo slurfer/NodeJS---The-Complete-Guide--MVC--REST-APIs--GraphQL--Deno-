@@ -116,19 +116,74 @@ exports.postCartDeleteItem = (req, res, next) => {
     .catch((err) => console.log(err));
 };
 
-exports.deleteCart = (req, res, next) => {
-  const prodId = req.params.productId;
-  Product.findById(prodId, (product) => {
-    Cart.deleteProduct(product.id, product.price);
-  });
-  res.redirect("/cart");
+exports.postCartCheckout = (req, res, next) => {
+  let newOrder;
+  req.user
+    .createOrder()
+    .then((order) => {
+      // create new order for user
+      newOrder = order;
+    })
+    .then(() => {
+      // fetch cart
+      return req.user.getCart();
+    })
+    .then((cart) => {
+      // fetch all products in the cart
+      console.log(cart.cartItem);
+      return cart.getProducts();
+    })
+    .then((products) => {
+      return products.forEach((product) => {
+        // iterate through all products from the cart
+        console.log("Entering new product with id: ", product.id);
+        console.log("Adding the product to order");
+        return (
+          newOrder
+            // add product to order
+            .addProduct(product, {
+              through: { quantity: product.cartItem.quantity },
+            })
+            // remove product from cart
+            .then((result) => {
+              console.log(
+                `Product ${product.id} should be in order, removing it from cart.`
+              );
+              product.cartItem.destroy();
+            })
+        );
+      });
+    })
+    .then((result) => {
+      console.log("Transaction completed, redirecting...");
+      res.redirect("/orders");
+    })
+    .catch((err) => console.log(err));
 };
 
 exports.getOrders = (req, res, next) => {
-  res.render("shop/orders", {
-    path: "/orders",
-    pageTitle: "Your Orders",
-  });
+  req.user
+    .getOrders()
+    .then((orders) => {
+      const ordersToBeRendered = orders.map((order) => {
+        const orderItem = { id: order.id };
+        return order.getProducts().then((products) => {
+          orderItem.products = products;
+          console.log(`order ${order.id} is in place...`)
+          return orderItem;
+        });
+      });
+      Promise.all(ordersToBeRendered)
+        .then(ordersToRender => {
+          console.log(ordersToRender);
+          res.render("shop/orders", {
+            path: "/orders",
+            pageTitle: "Your Orders",
+            orders: ordersToRender
+          });
+        })
+    })
+    .catch((err) => console.log(err));
 };
 
 exports.getCheckout = (req, res, next) => {

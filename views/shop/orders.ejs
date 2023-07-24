@@ -1,9 +1,26 @@
 <%- include('../includes/head.ejs') %>
-    </head>
+</head>
 
-    <body>
-        <%- include('../includes/navigation.ejs') %>
-        <main>
-            <h1>Nothing there!</h1>
-        </main>
-        <%- include('../includes/end.ejs') %>
+<body>
+    <%- include('../includes/navigation.ejs') %>
+    <main>
+        <% if (orders.length > 0) { %>
+            <ul>
+                <% orders.forEach(order => { %>
+                    <h1><%= order.id %></h1>
+                    <% order.products.forEach(p => { %>
+                        <li>
+                            <p><%= p.title %> - <%= p.orderItem.quantity %></p>
+                        </li>
+                    <%})%>
+                <%})%>
+            </ul>
+        <% } else { %>
+            <h1>No pending orders!</h1>
+        <% } %> %>
+        <form action="/cart-checkout" method="post">
+            <button class="btn" type="submit">Delete</button>
+        </form>
+    </main>
+
+<%- include('../includes/end.ejs') %>

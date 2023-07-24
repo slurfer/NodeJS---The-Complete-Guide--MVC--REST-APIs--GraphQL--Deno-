@@ -50,7 +50,8 @@ Product.belongsToMany(Cart, { through: CartItem });
 
 User.hasMany(Order);
 Order.belongsTo(User);
-Product.belongsToMany(Order, {through: OrderItem});
+Product.belongsToMany(Order, { through: OrderItem });
+Order.belongsToMany(Product, { through: OrderItem });
 
 sequelize
   // .sync({force: true})
@@ -68,7 +69,7 @@ sequelize
     }
     return Promise.resolve(user);
   })
-  .then(user => {
+  .then((user) => {
     user.createOrder();
     return user;
   })
