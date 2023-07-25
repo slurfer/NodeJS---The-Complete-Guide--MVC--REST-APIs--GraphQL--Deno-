@@ -117,45 +117,30 @@ exports.postCartDeleteItem = (req, res, next) => {
 };
 
 exports.postCartCheckout = (req, res, next) => {
-  let newOrder;
+  let fetchedCart;
   req.user
-    .createOrder()
-    .then((order) => {
-      // create new order for user
-      newOrder = order;
-    })
-    .then(() => {
-      // fetch cart
-      return req.user.getCart();
-    })
+    .getCart()
     .then((cart) => {
-      // fetch all products in the cart
-      console.log(cart.cartItem);
+      fetchedCart = cart;
       return cart.getProducts();
     })
     .then((products) => {
-      return products.forEach((product) => {
-        // iterate through all products from the cart
-        console.log("Entering new product with id: ", product.id);
-        console.log("Adding the product to order");
-        return (
-          newOrder
-            // add product to order
-            .addProduct(product, {
-              through: { quantity: product.cartItem.quantity },
+      return req.user
+        .createOrder()
+        .then((order) => {
+          order.addProducts(
+            products.map((product) => {
+              product.orderItem = { quantity: product.cartItem.quantity };
+              return product;
             })
-            // remove product from cart
-            .then((result) => {
-              console.log(
-                `Product ${product.id} should be in order, removing it from cart.`
-              );
-              product.cartItem.destroy();
-            })
-        );
-      });
+          );
+        })
+        .catch((err) => console.log(err));
     })
     .then((result) => {
-      console.log("Transaction completed, redirecting...");
+      return fetchedCart.setProducts(null);
+    })
+    .then((result) => {
       res.redirect("/orders");
     })
     .catch((err) => console.log(err));
@@ -163,25 +148,13 @@ exports.postCartCheckout = (req, res, next) => {
 
 exports.getOrders = (req, res, next) => {
   req.user
-    .getOrders()
+    .getOrders({ include: ["products"] })
     .then((orders) => {
-      const ordersToBeRendered = orders.map((order) => {
-        const orderItem = { id: order.id };
-        return order.getProducts().then((products) => {
-          orderItem.products = products;
-          console.log(`order ${order.id} is in place...`)
-          return orderItem;
-        });
+      res.render("shop/orders", {
+        path: "/orders",
+        pageTitle: "Your Orders",
+        orders: orders,
       });
-      Promise.all(ordersToBeRendered)
-        .then(ordersToRender => {
-          console.log(ordersToRender);
-          res.render("shop/orders", {
-            path: "/orders",
-            pageTitle: "Your Orders",
-            orders: ordersToRender
-          });
-        })
     })
     .catch((err) => console.log(err));
 };

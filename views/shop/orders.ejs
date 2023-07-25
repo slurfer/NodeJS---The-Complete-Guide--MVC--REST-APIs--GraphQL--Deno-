@@ -7,12 +7,16 @@
         <% if (orders.length > 0) { %>
             <ul>
                 <% orders.forEach(order => { %>
-                    <h1><%= order.id %></h1>
-                    <% order.products.forEach(p => { %>
-                        <li>
-                            <p><%= p.title %> - <%= p.orderItem.quantity %></p>
-                        </li>
-                    <%})%>
+                    <li>
+                        <h1><%= order.id %></h1>
+                        <ul>
+                            <% order.products.forEach(p => { %>
+                                <li>
+                                    <p><%= p.title %> - <%= p.orderItem.quantity %></p>
+                                </li>
+                            <%})%>
+                        </ul>
+                    </li>
                 <%})%>
             </ul>
         <% } else { %>

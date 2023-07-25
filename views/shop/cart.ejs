@@ -15,12 +15,13 @@
                     </li>
                 <%})%>
             </ul>
+            <form action="/cart-checkout" method="post">
+                <button class="btn" type="submit">Order Now!</button>
+            </form>
         <% } else { %>
             <h1>No products in Cart!</h1>
         <% } %> %>
-        <form action="/cart-checkout" method="post">
-            <button class="btn" type="submit">Delete</button>
-        </form>
+        
     </main>
 
 <%- include('../includes/end.ejs') %>
