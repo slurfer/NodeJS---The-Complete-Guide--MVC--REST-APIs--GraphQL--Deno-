@@ -1,6 +1,5 @@
 const Product = require("../models/product");
 
-
 exports.getAddProduct = (req, res, next) => {
   res.render("admin/edit-product", {
     pageTitle: "Add Product",
@@ -15,6 +14,7 @@ exports.postAddProduct = (req, res, next) => {
   const price = req.body.price;
   const description = req.body.description;
   const product = new Product(title, price, description, imageUrl);
+  console.log("creating: ", product);
   product
     .save()
     .then((result) => {
@@ -53,13 +53,7 @@ exports.postEditProduct = (req, res, next) => {
   const price = req.body.price;
   const description = req.body.description;
 
-  const product = new Product(
-    title,
-    price,
-    description,
-    imageUrl,
-    prodId
-  );
+  const product = new Product(title, price, description, imageUrl, prodId);
 
   product
     .save()
@@ -70,16 +64,15 @@ exports.postEditProduct = (req, res, next) => {
     .catch((err) => console.log(err));
 };
 
-// exports.postDeleteProduct = (req, res, next) => {
-//   const prodId = req.params.productId;
-//   Product.findByPk(prodId)
-//     .then((product) => product.destroy())
-//     .then((result) => {
-//       console.log("Product removed from database.");
-//       res.redirect("/admin/products");
-//     })
-//     .catch((err) => console.log(err));
-// };
+exports.postDeleteProduct = (req, res, next) => {
+  const prodId = req.params.productId;
+  Product.deleteById(prodId)
+    .then((result) => {
+      console.log("Product removed from database.");
+      res.redirect("/admin/products");
+    })
+    .catch((err) => console.log(err));
+};
 
 exports.getProducts = (req, res, next) => {
   Product.fetchAll()
