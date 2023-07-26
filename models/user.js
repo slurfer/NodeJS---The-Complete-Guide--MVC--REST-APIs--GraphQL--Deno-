@@ -9,7 +9,14 @@ class User {
 
   save() {
     const db = getDb();
-    return db.collection("users").insertOne(this);
+    return db
+      .collection("users")
+      .insertOne(this)
+      .then((user) => {
+        console.log(user);
+        return user;
+      })
+      .catch((err) => console.log(err));
   }
 
   static findById(userId) {
@@ -18,11 +25,11 @@ class User {
       .collection("users")
       .find({ _id: new mongodb.ObjectId(userId) })
       .next()
-      .then(user => {
-        console.log('User.findById: ', user);
+      .then((user) => {
+        console.log("User.findById: ", user);
         return user;
       })
-      .catch(err => console.log(err));
+      .catch((err) => console.log(err));
   }
 }
 
