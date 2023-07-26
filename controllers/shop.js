@@ -68,16 +68,16 @@ exports.postCart = (req, res, next) => {
 exports.postCartDeleteItem = (req, res, next) => {
   const prodId = req.params.productId;
   req.user
-    .getCart()
-    .then((cart) => {
-      return cart.getProducts({ where: { id: prodId } });
-    })
-    .then((products) => {
-      if (products.length > 0) {
-        product = products[0];
-        return product.cartItem.destroy();
-      }
-    })
+    .removeFromCart(prodId)
+    // .then((cart) => {
+    //   return cart.getProducts({ where: { id: prodId } });
+    // })
+    // .then((products) => {
+    //   if (products.length > 0) {
+    //     product = products[0];
+    //     return product.cartItem.destroy();
+    //   }
+    // })
     .then((result) => res.redirect("/cart"))
     .catch((err) => console.log(err));
 };

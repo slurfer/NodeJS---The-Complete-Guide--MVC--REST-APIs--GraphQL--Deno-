@@ -6,14 +6,18 @@ class User {
     this.name = username;
     this.email = email;
     this.cart = cart; // {items: []}
-    this._id = new mongodb.ObjectId(id);
+    this._id = id ? new mongodb.ObjectId(id) : null;
   }
 
   save() {
     const db = getDb();
-    return db
-      .collection("users")
-      .insertOne(this)
+    let dbOp;
+    if (this._id) {
+      dbOp = db.collection("users").updateOne({ _id: this._id }, { $set: this });
+    } else {
+      dbOp = db.collection("users").insertOne(this);
+    }
+    return dbOp
       .then((user) => {
         console.log(user);
         return user;
@@ -48,6 +52,23 @@ class User {
     return db
       .collection("users")
       .updateOne({ _id: this._id }, { $set: { cart: updatedCart } });
+  }
+
+  removeFromCart(productId) {
+    const newCart = this.cart.items.filter((p) => {
+      return p.productId.toString() !== productId.toString();
+    });
+    const product = this.cart.items.filter((p) => {
+      return p.productId.toString() === productId.toString();
+    })[0];
+    console.log(product);
+    console.log(product.quantity);
+    if (product.quantity > 1) {
+      product.quantity = product.quantity - 1;
+      newCart.push(product);
+    }
+    this.cart.items = newCart;
+    return this.save();
   }
 
   getCart() {
